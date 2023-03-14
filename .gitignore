@@ -1,0 +1,11 @@
+# Ignores all files
+*
+
+# Un-ignores all folders
+!*/
+# Un-ignores all files with extensions
+!*.*
+
+*.dSYM/
+.*
+!.gitignore
