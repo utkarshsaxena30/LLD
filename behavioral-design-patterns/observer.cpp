@@ -1,80 +1,62 @@
 #include<iostream>
+#include<memory>
 #include<list>
 
-using namespace std;
-
-class Observer {
-public:
-    virtual void update() = 0;
-};
-
-class Observable {
-public: 
-    virtual void attach(Observer* Observer) = 0;
-    virtual void remove(Observer* Observer) = 0;
-    virtual void notify() = 0;
-};
-
-class EmailObserver: public Observer {
-    string email;
-public:
-    EmailObserver(string email) {
-        this->email = email;
-    }
-
-    void update() {
-        cout << "Sent notification through E-mail to: " << email << endl;
-    }
-};
-
-class TextObserver: public Observer {
-    string phoneNumber;
-public: 
-    TextObserver(string phoneNumber) {
-        this->phoneNumber = phoneNumber;
-    }
-
-    void update() {
-        cout << "Sent notification through text to: " << phoneNumber << endl;
-    }
-};
-
-class IPhoneStockObservable: public Observable {
-    int stock;
-    list<Observer*> observers;
-public: 
-    void attach(Observer* observer) {
-        observers.push_back(observer);
-    }
-
-    void remove(Observer* observer) {
-        observers.remove(observer);
-    }
-
-    void notify() {
-        for(auto observer: observers) {
-            observer->update();
+/*  OBSERVER  */
+class StockObserver {
+    public: 
+        void onStockPriceChange(int currentPrice) const {
+            std::cout << "Stock Price Was Changed!";
         }
-    }
+};
 
-    void updateStock(int newStock) {
-        if(stock == 0 && newStock != 0) notify();
-        stock = newStock;
-    }
+/*    STOCK   */
+class Stock {
+    protected: 
+        int price_;
+    public: 
+        Stock(int price): price_(price) {}
 
-    IPhoneStockObservable() {
-        stock = 0;
-    }
+        int getCurrentPrice() const {
+            return price_;
+        }
+
+        virtual void setNewPrice(int price) = 0;
+
+        virtual ~Stock() = default;
+};
+
+/* OBSERVABLE */
+class StockObservable: public Stock {
+    private:
+        std::list<std::shared_ptr<StockObserver>> observers_;
+    public:
+        StockObservable(int price): Stock(price) {}
+
+        void attachObserver(std::shared_ptr<StockObserver> observer) {
+            observers_.push_back(observer);
+        }
+
+        void removeObserver(std::shared_ptr<StockObserver> observer) {
+            observers_.remove(observer);
+        }
+
+        void notify() const {
+            std::cout << "price >>" << price_;
+            for(const auto &observer: observers_) observer->onStockPriceChange(price_);
+        }
+
+        void setNewPrice(int price) override {
+            price_ = price;
+            notify();
+        }
 };
 
 int main() {
-    IPhoneStockObservable observable;
+    StockObservable stock(100);
+    auto observer1 = std::make_shared<StockObserver>();
 
-    EmailObserver emailObserver("saxenautkarsh0@gmail.com");
-    TextObserver textObserver("8171505570");
+    stock.attachObserver(observer1);
 
-    observable.attach(&emailObserver);
-    observable.attach(&textObserver);
-
-    observable.updateStock(100);
+    stock.setNewPrice(1000);
 }
