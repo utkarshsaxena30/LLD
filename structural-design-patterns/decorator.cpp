@@ -1,56 +1,88 @@
 #include<iostream>
+#include<list>
+#include<memory>
+#include<stdexcept>
 
-using namespace std;
-
+/****************************************************************************************************/
 class Pizza {
-public: 
-    virtual int getCost() = 0;
+    public: 
+        virtual int getCost() const = 0;
+        virtual ~Pizza() = default;
 };
 
-class MargheritaPizza: public Pizza {
-public: 
-    int getCost() override {
-        return 100;
-    }
+class Margherita: public Pizza {
+    private: 
+        int price_;
+    public: 
+        Margherita(int price): price_(price) {}
+
+        int getCost() const override {
+            return price_;
+        }
 };
 
-class FarmhousePizza: public Pizza {
-public: 
-    int getCost() override {
-        return 200;
-    }
+class Farmhouse: public Pizza {
+    private: 
+        int price_;
+    public: 
+        Farmhouse(int price): price_(price) {}
+
+        int getCost() const override {
+            return price_;
+        }
 };
 
-class ToppingDecorator: public Pizza {
-protected: 
-    Pizza* pizza_;
-public: 
-    ToppingDecorator(Pizza* pizza): pizza_(pizza) {}
+/****************************************************************************************************/
+class PizzaDecorator: public Pizza {
+    protected: 
+        std::shared_ptr<Pizza> pizza_;
+    public: 
+        PizzaDecorator(std::shared_ptr<Pizza> pizza): pizza_(pizza) {}
 
-    int getCost() {
-        return pizza_->getCost();
-    }
+        virtual int getCost() const = 0;
+
+        virtual ~PizzaDecorator() = default;
 };
 
-class Cheese: public ToppingDecorator {
-public: 
-    Cheese(Pizza *pizza): ToppingDecorator(pizza) {}
+class Cheese: public PizzaDecorator {
+    public:
+        Cheese(std::shared_ptr<Pizza> pizza): PizzaDecorator(pizza) {}
 
-    int getCost() {
-        return pizza_->getCost() + 25;
-    }
+        int getCost() const override {
+            if(!pizza_) throw std::runtime_error("Invalid Pizza");
+
+            return pizza_->getCost() + 50;
+        }
 };
 
-class Pepperoni: public ToppingDecorator {
-public: 
-    Pepperoni(Pizza *pizza): ToppingDecorator(pizza) {}
+class Mushroom: public PizzaDecorator {
+    public: 
+        Mushroom(std::shared_ptr<Pizza> pizza): PizzaDecorator(pizza) {}
+        
+        int getCost() const override {
+            if(!pizza_) throw std::runtime_error("Invalid Pizza");
 
-    int getCost() {
-        return pizza_->getCost() + 45;
-    }
+            return pizza_->getCost() + 30;
+        }
 };
+
+class Pepperoni: public PizzaDecorator {
+    public: 
+        Pepperoni(std::shared_ptr<Pizza> pizza): PizzaDecorator(pizza) {}
+        
+        int getCost() const override {
+            if(!pizza_) throw std::runtime_error("Invalid Pizza");
+
+            return pizza_->getCost() + 80;
+        }
+};
+/****************************************************************************************************/
 
 int main() {
-    Pizza* pizza = new Pepperoni(new Cheese(new MargheritaPizza()));
-    cout << pizza->getCost() << endl;
+    std::shared_ptr<Pizza> basePizza = std::make_shared<Margherita>(200);
+
+    std::shared_ptr<Pizza> customizedPizza = std::make_shared<Pepperoni>(std::make_unique<Cheese>(basePizza));
+
+    std::cout << "Cost of base Pizza >> " << basePizza->getCost() << std::endl;
+    std::cout << "Cost of customized Pizza >> " << customizedPizza->getCost() << std::endl;
 }
