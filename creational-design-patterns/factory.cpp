@@ -4,35 +4,59 @@ using namespace std;
 
 class Animal {
 public:
-    virtual void speak() = 0;
+    virtual string speak() const = 0;
 };
 
 class Dog: public Animal {
 public:
-    void speak() override {
-        cout << "Woof!";
+    string speak() const override {
+        return "Woof!";
     }
 };
 
 class Cat: public Animal {
 public: 
-    void speak() override {
-        cout << "Meow!";
+    string speak() const override {
+        return "Meow!";
     }
 };
 
 class AnimalFactory {
-public: 
-    Animal* getAnimal(string input) {
-        if(input == "DOG") return new Dog();
-        else if(input == "CAT") return new Cat();
-        return NULL;
+public:
+    virtual Animal* getAnimal() const = 0;
+
+    void makeSound() {
+        cout << "Inside AnimalFactory, sound: " << getAnimal()->speak() << endl;
     }
 };
 
-int main() {
-    AnimalFactory animalFactory;
-    Animal* animal = animalFactory.getAnimal("CAT");
+class GoodBoyFactory: public AnimalFactory {
+public: 
+    Animal* getAnimal() const override {
+        return new Dog();
+    }
+};
 
-    animal->speak();
+class BadBoyFactory: public AnimalFactory {
+public: 
+    Animal* getAnimal() const override {
+        return new Cat();
+    }
+};
+
+void clientCode(AnimalFactory &animalFactory) {
+    Animal *animal = animalFactory.getAnimal();
+    cout << animal->speak() << endl; 
+    animalFactory.makeSound();
+}
+
+int main() {
+    AnimalFactory *animalFactory = NULL;
+    cout << "Testing GoodBoyFactory" << endl;
+    animalFactory = new GoodBoyFactory();
+    clientCode(*animalFactory);
+
+    cout << "Testing BadBoyFactory" << endl;
+    animalFactory = new BadBoyFactory();
+    clientCode(*animalFactory);
 }
