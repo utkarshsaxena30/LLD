@@ -72,6 +72,15 @@ public:
     }
 };
 
+void clientCode(GUIFactory &factory) {
+    Button *button = factory.createButton();
+    Checkbox *checkbox = factory.createCheckbox();
+    button->paint();
+    checkbox->paint();
+    delete button;
+    delete checkbox;
+}
+
 int main() {
     GUIFactory* factory = nullptr;
     Button* button = nullptr;
@@ -79,22 +88,12 @@ int main() {
 
     // create a Linux factory and a Linux button and checkbox
     factory = new LinuxFactory();
-    button = factory->createButton();
-    checkbox = factory->createCheckbox();
-    button->paint();
-    checkbox->paint();
-    delete button;
-    delete checkbox;
-    delete factory;
+    clientCode(*factory);
 
     // create a Windows factory and a Windows button and checkbox
     factory = new WindowsFactory();
-    button = factory->createButton();
-    checkbox = factory->createCheckbox();
-    button->paint();
-    checkbox->paint();
-    delete button;
-    delete checkbox;
+    clientCode(*factory);
+
     delete factory;
 
     return 0;
