@@ -32,8 +32,9 @@ class TicketHandler {
         std::shared_ptr<TicketHandler> _next;
 
     public: 
-        void setNext(std::shared_ptr<TicketHandler> next) {
+        std::shared_ptr<TicketHandler> setNext(std::shared_ptr<TicketHandler> next) {
             _next = next;
+            return next;
         }
 
         void handleNext(Ticket ticket) const {
@@ -94,9 +95,7 @@ int main() {
     std::shared_ptr<HighTicketHandler> highAgent(new HighTicketHandler());
     std::shared_ptr<CriticalTicketHandler> criticalAgent(new CriticalTicketHandler());
 
-    lowAgent->setNext(mediumAgent);
-    mediumAgent->setNext(highAgent);
-    highAgent->setNext(criticalAgent);
+    lowAgent->setNext(mediumAgent)->setNext(highAgent)->setNext(criticalAgent);
 
     Ticket ticket(CRITICAL);
     lowAgent->handle(ticket);
